@@ -2,6 +2,7 @@
 
 namespace DivineOmega\PasswordExposed;
 
+use function array_merge;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use rapidweb\RWFileCachePSR6\CacheItemPool;
@@ -13,17 +14,21 @@ class PasswordExposedChecker
 
     const CACHE_EXPIRY_SECONDS = 60 * 60 * 24 * 30;
 
-    public function __construct()
+    public function __construct($cacheConfig=[], $clientConfig=[])
     {
-        $this->client = new Client([
-            'base_uri' => 'https://api.pwnedpasswords.com/',
-            'timeout'  => 3.0,
-        ]);
-
+		$defaultClientConfig = [
+			'base_uri' => 'https://api.pwnedpasswords.com/',
+			'timeout'  => 3.0,
+		];
+	
+		$defaultCacheConfig = [
+			'cacheDirectory' => '/tmp/password-exposed-cache/',
+		];
+		
+        $this->client = new Client(array_merge($defaultClientConfig, $clientConfig));
+        
         $this->cache = new CacheItemPool();
-        $this->cache->changeConfig([
-            'cacheDirectory' => '/tmp/password-exposed-cache/',
-        ]);
+        $this->cache->changeConfig(array_merge($defaultCacheConfig, $cacheConfig));
     }
 
     public function passwordExposed($password)
